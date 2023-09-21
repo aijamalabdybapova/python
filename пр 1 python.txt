@@ -1,0 +1,57 @@
+import math
+while True:
+    try:
+        first_num = float(input("Введите первое число: "))
+    except:
+        print("Это не число")
+        break
+    operator = input("Выберите операцию (+ , -, *, /, ^, sqrt, !, sin, cos, tg): ")
+    if operator == "+":
+        try:
+          second_num = float(input("Введите второе число: "))
+        except:
+            print("Это не число")
+        result = first_num + second_num
+    elif operator == "-":
+        try:
+            second_num1 = float(input("Введите второе число: "))
+        except:
+            print("Это не число")
+        result = first_num - second_num1
+    elif operator == "*":
+        try:
+            second_num2 = float(input("Введите второе число: "))
+        except:
+            print("Это не число")
+        result = first_num * second_num2
+    elif operator == "/":
+        try:
+            second_num3 = float(input("Введите второе число: "))
+        except:
+            print("Это не число")
+        if second_num3 == 0:
+            print("Невозможно разделить на 0")
+            continue
+        else:
+            result = first_num / second_num3
+    elif operator == "^":
+        try:
+            stepen = float(input("Введите степень числа: "))
+        except:
+            print("Это не число")
+        result = first_num ** stepen
+    elif operator == "sqrt":
+        result = first_num ** 0.5
+    elif operator == "!":
+        result = math.factorial(first_num)
+    elif operator == "sin":
+        result = math.sin(first_num)
+    elif operator == "cos":
+        result = math.cos(first_num)
+    elif operator == "tg":
+        result = math.tan(first_num)
+    else:
+        print("Ошибка! Неверная операция")
+        continue
+
+    print("Результат: ", result)
