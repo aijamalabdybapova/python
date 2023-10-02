@@ -1,0 +1,62 @@
+print("Введите числа через пробел:")
+numbers = input().split()
+numbers = list(map(int, numbers))
+minimum = min(numbers)
+maximum = max(numbers)
+print("Наименьшее число:", minimum)
+print("Наибольшее число:", maximum)
+
+
+
+words = ['chicken', 'table', 'chair', 'window', 'flower', 'tea']
+sorted_words = sorted(words)
+print(sorted_words)
+
+
+
+students = {
+"Катя": 4.5,
+"Алина": 3.2,
+"Миша": 5,
+"Макс": 4.9,
+"Света": 4.7
+}
+student_tuples = [(name, grade) for name, grade in students.items()]
+print(student_tuples)
+
+
+
+text = input("Введите текст: ")
+words = text.split()
+unikal_words = set(words)
+print("Уникальные слова в тексте:")
+for word in unikal_words:
+   print(word)
+
+
+
+A = {1, 7, 9, 56, 8, 68, 101}
+B = {4, 101, 4, 7, 8, 78, 208}
+intersection = A & B
+print(intersection)
+
+
+
+employees = {
+    "Печкин": "Соц. отдел",
+    "Куркин": "Отдел коммуникации",
+    "Шляпина": "Отдел безопасности"
+}
+def print_employees():
+    print("Список сотрудников:")
+    for name, department in employees.items():
+        print(f"{name} - {department}")
+def hire_employee(name, department):
+    employees[name] = department
+    print(f"{name} принят(а) на работу в отдел {department}")
+def fire_employee(name):
+    if name in employees:
+        department = employees.pop(name)
+        print(f"{name} уволен(а) из отдела {department}")
+    else:
+        print(f"{name} не является сотрудником компании")
