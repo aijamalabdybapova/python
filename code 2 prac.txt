@@ -1,0 +1,170 @@
+import sys
+import time
+import random
+
+hp = random.randint(90,120)
+power = random.randint(10,50)
+enemy = {"name":"Крис",  "health": hp, "power": power}
+person1 = {"name":"'Энн", "age":"23", "profesia":"Врач", "health": 80, "power": 30}
+person2 = {"name":"'Вилли", "age":"18","profesia":"Скалолаз", "health": 100, "power": 25}
+person3 = {"name":"'Джек", "age":"30","profesia":"Детектив", "health": 120, "power": 40}
+
+def greeting():
+    txt = 'Добро пожаловать в игру!'
+    for i in txt:
+        time.sleep(0.08)
+        print(i, end='', flush=True)
+    print()
+
+
+def zagadka():
+    print("Поздравляю!Ты почти выбрался, осталось лишь разгадать загадку.\nДля компьютера программы\nСоставляет он всегда.\nЦиклы, классы, подпрограммы -\nИнструмент его труда.")
+    otvet= str (input ("Твой ответ: ")).capitalize()
+    if otvet== "Программист".capitalize():
+        print('Я открываю дверь ключом и наконец-то выбираюсь из дома!')
+        print('Я победил!')
+        print('Я свободен!!!')
+        exit()
+    else: zagadka2()
+
+def zagadka2():
+    print("Увы и ах, но ответ неправильный. Но мы люди добрые, поэтому у тебя есть еще одна попытка\nВы заходите в тёмную кухню. В ней есть свеча, керосиновая лампа и газовая плита. Что вы зажжёте в первую очередь?")
+    otvet2= str(input ("Твой ответ: ")).capitalize()
+    if otvet2== "Спичку".capitalize():
+        print("Наконец-то ты смог выйти из этого дома.Поздравляю!")
+    else:
+        print("Сорри. Гейм из овер :(")
+    exit()
+
+
+def fight(oruzhie, person):
+    print(f"И вот в этой комнате вы наткнулист на сурового монстра, имя которого - {enemy['name']}. Он ненавидит вас и хочет убить.")
+    if oruzhie:
+        person["power"] += 30
+
+    while True:
+        if enemy["health"] > 0 and person["health"] > 0:
+            print(f"Ваше здоровье: {person['health']} \nЗдоровье Криса: {enemy['health']}")
+            choice = int(input("Выберете действие: \n1. Атака\n2. Защита\n Ваш выбор: "))
+
+
+            match choice:
+                case 1:
+                    enemy["health"] -= person["power"]
+                    person["health"] -= enemy["power"]
+                case 2:
+                    person["health"] = person["health"] - (enemy["power"]/2)
+        elif enemy["health"] <= 0:
+            print("Поздравляю, вы победили Криса!")
+            break
+        elif person["health"] <= 0:
+            print("Крис оказался сильнее. Бог удачи вас не любит")
+            exit()
+
+
+
+
+def main():
+    greeting()
+    time.sleep(1)
+person = str(input("Для начала выбери себе персонажа: \n Энн\n Вилли\n Джек\n Я выбираю: ")).capitalize()
+time.sleep(2)
+
+if person == "Энн":
+     el1 = person1
+     print("Вы: ", el1)
+elif person == "Вилли":
+     el1 = person2
+     print("Вы: ", el1)
+elif person == "Джек":
+     el1 = person3
+     print("Вы: ", el1)
+else:
+    print ("Вы ввели неправильное значение")
+    exit()
+print (" \nЯ просыпаюсь от ужасной боли в голове\nЧто происходит?Где я?\nПомню только, что поздно возвращался домой и все...Темнота\nЯ оглянулся и увидел вокруг себя стол, потом стулья и холодильник")
+time.sleep(1)
+print ("Это чья-то кухня...В чужом доме..Надо выбираться срочно от сюда! ")
+time.sleep(1)
+room="кухня".capitalize()
+vyhod = False
+key = False
+oruzhie= False
+monster = True
+while True:
+     if room == 'Кухня':
+        print('Я на кухне')
+        print('1. Перейти в гостинную')
+        if monster:
+
+            if oruzhie and enemy["health"] > 0:
+                print('2. Убить монстра оружием')
+            elif enemy["health"] > 0:
+                print('2. Подойти к монстру')
+        else:
+            print('2. Перейти в кладовую')
+        print('Выберите действие')
+        where = int(input())
+        while where != 1 and where != 2:
+            print('Выберите действие')
+            where = int(input())
+        if where == 1:
+            room = 'Гостинная'
+        elif monster:
+            fight(oruzhie, el1)
+            monster = False
+        elif enemy["health"] <= 0:
+            room = 'Кладовая'
+
+     elif room == 'Гостинная':
+        print('Я в гостинной')
+        print('1. Перейти на кухню')
+        print('2. Перейти в коридор')
+        print('3. Посмотреть в шкафу')
+        print('Выберите действие')
+        where = int(input())
+        while where != 1 and where != 2 and where != 3:
+            print('Выберите действие')
+            where = int(input())
+        if where == 1:
+            room = 'Кухня'
+        elif where == 2:
+            room = 'Коридор'
+        else:
+            if not oruzhie:
+                print('Я нашел в шкафу оружие')
+                oruzhie = True
+            else:
+                print('Шкаф пуст')
+
+     elif room == 'Коридор':
+        print('Я  в коридоре')
+        print('1. Перейти в гостинную')
+        print('2. Открыть дверь')
+        print('Выберите действие')
+        where = int(input())
+        while where != 1 and where != 2:
+            print('Выберите действие')
+            where = int(input())
+        if where == 1:
+            current_room = 'Гостинная'
+        else:
+            if key:
+                zagadka()
+                vyhod = True
+            else:
+                print('Дверь заперта')
+
+     elif room == 'Кладовая':
+        print('Я зашел в кладовую')
+        if not key:
+            print('И тут же увидел на полу старинный ключ')
+            print('Видимо это ключ от входной двери')
+            key = True
+        print('1. Перейти в кухню')
+        print('Введите номер комнаты, куда вы хотите попасть')
+        where = int(input())
+        while where != 1:
+            print('Введите номер комнаты, куда вы хотите попасть')
+            where = int(input())
+        room = 'Кухня'
