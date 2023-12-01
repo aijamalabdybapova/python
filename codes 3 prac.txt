@@ -1,0 +1,241 @@
+import time
+import random
+import json
+import csv
+import os
+
+hp = random.randint(90, 120)
+power = random.randint(10, 50)
+enemy = {"name": "Крис", "health": hp, "power": power}
+person1 = {"name": "'Энн", "age": "23", "profesia": "Врач", "health": 80, "power": 30}
+person2 = {"name": "'Вилли", "age": "18", "profesia": "Скалолаз", "health": 100, "power": 25}
+person3 = {"name": "'Джек", "age": "30", "profesia": "Детектив", "health": 120, "power": 40}
+
+
+def greeting():
+    # Функция выводит приветствие на экран посимвольно
+    txt = 'Добро пожаловать в игру!'
+    for i in txt:
+        time.sleep(0.05)
+        print(i, end='', flush=True)
+    print()
+
+
+
+def save_game(game_data):
+    # Функция сохраняет данные в JSON файл
+    with open("game_save.json", "w", encoding="utf-8") as f:
+        json.dump(game_data, f, ensure_ascii=False)
+
+def delete_save():
+    # Функция удаляет сохранение по указанному имени файла
+    with open("game_save.json", "w", encoding="utf-8") as f:
+        data = []
+        json.dump(data, f, ensure_ascii=False)
+
+# Функция для записи игровых данных в CSV файл
+def write_to_csv(game_data):
+    if os.path.exists("game_data.csv"):
+        with open("game_data.csv", "a", newline='') as f:
+            headerCSV = ["character", "room","Key","weapon", "enemy"]
+            data = []
+            data.append(game_data)
+            writer = csv.DictWriter(f, fieldnames=headerCSV, delimiter=";")
+            print(game_data)
+            writer.writerows(data)
+    else:
+        with open("game_data.csv", "a", newline='') as f:
+            headerCSV = ["character", "room", "Key", "weapon", "enemy"]
+            data = []
+            data.append(game_data)
+            writer = csv.DictWriter(f, fieldnames=headerCSV, delimiter=";")
+            writer.writeheader()
+            print(game_data)
+            writer.writerows(data)
+
+def zagadka(game_data):
+    print("Поздравляю! Ты почти выбрался, осталось лишь разгадать загадку.")
+    print("Для компьютера программы")
+    print("Составляет он всегда.")
+    print("Циклы, классы, подпрограммы -")
+    print("Инструмент его труда.")
+    otvet = str(input("Твой ответ: ")).capitalize()
+    if otvet == "Программист":
+        print('Я открываю дверь ключом и наконец-то выбираюсь из дома!')
+        print('Я победил!')
+        print('Я свободен!!!')
+        write_to_csv(game_data)
+        exit()
+
+    else:
+        zagadka2(game_data)
+
+def zagadka2(game_data):
+    print("Увы и ах, но ответ неправильный. Но мы люди добрые, поэтому у тебя есть еще одна попытка.")
+    print("Вы заходите в тёмную кухню. В ней есть свеча, керосиновая лампа и газовая плита.")
+    print("Что вы зажжёте в первую очередь?")
+    otvet2 = str(input("Твой ответ: ")).capitalize()
+    if otvet2 == "Спичку":
+        print("Наконец-то ты смог выйти из этого дома. Поздравляю!")
+    else:
+        print("Сорри. Гейм из овер :(")
+    write_to_csv(game_data)
+    exit()
+
+def fight(oruzhie, person, game_data):
+    print(f"И вот в этой комнате вы наткнулись на сурового монстра, имя которого - {enemy['name']}. Он ненавидит вас и хочет убить.")
+    if oruzhie:
+        person["power"] += 30
+
+    while True:
+        if enemy["health"] > 0 and person["health"] > 0:
+            print(f"Ваше здоровье: {person['health']}")
+            print(f"Здоровье Криса: {enemy['health']}")
+            choice = int(input("Выберете действие:\n1. Атака\n2. Защита\nВаш выбор: "))
+
+            if choice == 1:
+                enemy["health"] -= person["power"]
+                person["health"] -= enemy["power"]
+            elif choice == 2:
+                person["health"] -= (enemy["power"]/2)
+
+        elif enemy["health"] <= 0:
+            print("Поздравляю, вы победили Криса!")
+            break
+        elif person["health"] <= 0:
+            print("Крис оказался сильнее. Бог удачи вас не любит")
+            write_to_csv(game_data)
+            exit()
+
+def main():
+    greeting()
+    time.sleep(1)
+    person = str(input("Для начала выбери себе персонажа:\nЭнн\nВилли\nДжек\nЯ выбираю: ")).capitalize()
+    time.sleep(2)
+
+    if person == "Энн":
+        el1 = person1
+        print("Вы: ", el1)
+    elif person == "Вилли":
+        el1 = person2
+        print("Вы: ", el1)
+    elif person == "Джек":
+        el1 = person3
+        print("Вы: ", el1)
+    else:
+        print ("Вы ввели неправильное значение")
+        exit()
+
+    print("Я просыпаюсь от ужасной боли в голове")
+    print("Что происходит? Где я?")
+    print("Помню только, что поздно возвращался домой и все... Темнота")
+    print("Я оглянулся и увидел вокруг себя стол, потом стулья и холодильник")
+    time.sleep(1)
+    print("Это чья-то кухня... В чужом доме.. Надо выбираться срочно отсюда!")
+    time.sleep(1)
+    room = "кухня".capitalize()
+    key = False
+    oruzhie = False
+    monster = True
+
+    while True:
+        game_data = {
+            "character": person,
+            "room": room,
+            "Key": key,
+            "weapon": oruzhie,
+            "enemy": monster
+        }
+        if room == 'Кухня':
+            print('Я на кухне')
+            print('1. Перейти в гостинную')
+            if monster:
+                if oruzhie and enemy["health"] > 0:
+                    print('2. Убить монстра оружием')
+                elif enemy["health"] > 0:
+                    print('2. Подойти к монстру')
+            else:
+                print('2. Перейти в кладовую')
+
+            print('Выберите действие')
+            where = int(input())
+            while where != 1 and where != 2:
+                print('Выберите действие')
+                where = int(input())
+            if where == 1:
+                room = 'Гостинная'
+            elif monster:
+                fight(oruzhie, el1, game_data)
+                monster = False
+            elif enemy["health"] <= 0:
+                room = 'Кладовая'
+
+        elif room == 'Гостинная':
+            print('Я в гостинной')
+            print('1. Перейти на кухню')
+            print('2. Перейти в коридор')
+            print('3. Посмотреть в шкафу')
+            print('4. Сохранить')
+            print('5. Удалить')
+            print('Выберите действие')
+            where = int(input())
+            while where != 1 and where != 2 and where != 3 and where != 4 and where != 5:
+                print('Выберите действие')
+                where = int(input())
+
+            if where == 1:
+                room = 'Кухня'
+            elif where == 2:
+                room = 'Коридор'
+            elif where == 4:
+                save_game(game_data)
+            elif where == 5:
+                delete_save()
+            else:
+                if not oruzhie:
+                    print('Я нашел в шкафу оружие')
+                    oruzhie = True
+                else:
+                    print('Шкаф пуст')
+
+
+        elif room == 'Коридор':
+            print('Я  в коридоре')
+            print('1. Перейти в гостинную')
+            print('2. Открыть дверь')
+            print('3. Сохранить')
+            print('4. Удалить')
+            print('Выберите действие')
+            where = int(input())
+            while where != 1 and where != 2 and where != 3 and where != 4:
+                print('Выберите действие')
+                where = int(input())
+            if where == 1:
+                room = 'Гостинная'
+            if where == 3:
+                save_game(game_data)
+            if where == 4:
+                delete_save()
+            else:
+                if key:
+                    zagadka(game_data)
+                print('Дверь заперта')
+
+        elif room == 'Кладовая':
+            print('Я зашел в кладовую')
+            if not key:
+                print('И тут же увидел на полу старинный ключ')
+                print('Видимо это ключ от входной двери')
+                key = True
+            print('1. Перейти в кухню')
+            print('Введите номер комнаты, куда вы хотите попасть')
+            where = int(input())
+            while where != 1:
+                print('Введите номер комнаты, куда вы хотите попасть')
+                where = int(input())
+            room = 'Кухня'
+
+if __name__ == "__main__":
+   main()
+   exit()
+
