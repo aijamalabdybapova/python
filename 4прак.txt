@@ -1,0 +1,320 @@
+import sqlite3
+
+class Database:
+    def __init__(self):
+        self.conn = sqlite3.connect('salon.db')
+        self.cursor = self.conn.cursor()
+        self.create_tables()
+
+    def create_tables(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                username TEXT NOT NULL,
+                                password TEXT NOT NULL,
+                                role TEXT NOT NULL
+                            )''')
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS products (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                name TEXT NOT NULL,
+                                price REAL NOT NULL,
+                                quantity INTEGER NOT NULL
+                            )''')
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS orders (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                user_id INTEGER NOT NULL,
+                                product_id INTEGER NOT NULL,
+                                quantity INTEGER NOT NULL,
+                                FOREIGN KEY (user_id) REFERENCES users (id),
+                                FOREIGN KEY (product_id) REFERENCES products (id)
+                            )''')
+
+        self.conn.commit()
+
+    def register_user(self, username, password, role):
+        self.cursor.execute('''INSERT INTO users (username, password, role) VALUES (?, ?, ?)''',
+                            (username, password, role))
+        self.conn.commit()
+
+    def login_user(self, username, password):
+        self.cursor.execute('''SELECT * FROM users WHERE username = ? AND password = ?''',
+                            (username, password))
+        user = self.cursor.fetchone()
+        return user
+
+    def add_product(self, name, price, quantity):
+        self.cursor.execute('''INSERT INTO products (name, price, quantity) VALUES (?, ?, ?)''',
+                            (name, price, quantity))
+        self.conn.commit()
+
+    def update_product(self, product_id, name, price, quantity):
+        self.cursor.execute('''UPDATE products SET name = ?, price = ?, quantity = ? WHERE id = ?''',
+                            (name, price, quantity, product_id))
+        self.conn.commit()
+
+    def delete_product(self, product_id):
+        self.cursor.execute('''DELETE FROM products WHERE id = ?''', (product_id,))
+        self.conn.commit()
+
+    def get_products(self):
+        self.cursor.execute('''SELECT * FROM products''')
+        products = self.cursor.fetchall()
+        return products
+
+    def add_order(self, user_id, product_id, quantity):
+        self.cursor.execute('''INSERT INTO orders (user_id, product_id, quantity) VALUES (?, ?, ?)''',
+                            (user_id, product_id, quantity))
+        self.conn.commit()
+
+    def delete_order(self, order_id):
+        self.cursor.execute('''DELETE FROM orders WHERE id = ?''', (order_id,))
+        self.conn.commit()
+
+    def get_orders(self, user_id):
+        self.cursor.execute('''SELECT * FROM orders WHERE user_id = ?''', (user_id,))
+        orders = self.cursor.fetchall()
+        return orders
+
+
+class Client:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def view_products(self):
+        db = Database()
+        products = db.get_products()
+        for product in products:
+            print(f"ID: {product[0]}, Name: {product[1]}, Price: {product[2]}, Quantity: {product[3]}")
+
+    def add_to_cart(self, product_id, quantity):
+        db = Database()
+        product = db.get_product(product_id)
+        if product:
+            if product[3] >= quantity:
+                db.add_order(self.user_id, product_id, quantity)
+                print("Product added to cart successfully.")
+            else:
+                print("Insufficient quantity.")
+        else:
+            print("Invalid product ID.")
+
+    def remove_from_cart(self, order_id):
+        db = Database()
+        order = db.get_order(order_id)
+        if order:
+            if order[1] == self.user_id:
+                db.delete_order(order_id)
+                print("Product removed from cart successfully.")
+            else:
+                print("You are not authorized to remove this product.")
+        else:
+            print("Invalid order ID.")
+
+    def view_orders(self):
+        db = Database()
+        orders = db.get_orders(self.user_id)
+        for order in orders:
+            product = db.get_product(order[2])
+            print(f"Order ID: {order[0]}, Product: {product[1]}, Quantity: {order[3]}")
+
+
+class Employee:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def add_product(self, name, price, quantity):
+        db = Database()
+        db.add_product(name, price, quantity)
+        print("Product added successfully.")
+
+    def update_product(self, product_id, name, price, quantity):
+        db = Database()
+        db.update_product(product_id, name, price, quantity)
+        print("Product updated successfully.")
+
+    def delete_product(self, product_id):
+        db = Database()
+        db.delete_product(product_id)
+        print("Product deleted successfully.")
+
+    def view_products(self):
+        db = Database()
+        products = db.get_products()
+        for product in products:
+            print(f"ID: {product[0]}, Name: {product[1]}, Price: {product[2]}, Quantity: {product[3]}")
+
+
+class Admin:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def add_employee(self, username, password):
+        db = Database()
+        db.register_user(username, password, "employee")
+        print("Employee added successfully.")
+
+    def update_employee(self, employee_id, username, password):
+        db = Database()
+        db.update_user(employee_id, username, password)
+        print("Employee updated successfully.")
+
+    def delete_employee(self, employee_id):
+        db = Database()
+        db.delete_user(employee_id)
+        print("Employee deleted successfully.")
+
+    def view_employees(self):
+        db = Database()
+        employees = db.get_users("employee")
+        for employee in employees:
+            print(f"ID: {employee[0]}, Username: {employee[1]}")
+
+
+def main():
+    db = Database()
+    while True:
+        print("1. Register")
+        print("2. Login")
+        print("3. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice =="1":
+            username = input("Enter username: ")
+            password = input("Enter password: ")
+            role = input("Enter role (client, employee, admin): ")
+
+            db.register_user(username, password, role)
+            print("User registered successfully.")
+
+        elif choice == "2":
+            username = input("Enter username: ")
+            password = input("Enter password: ")
+
+            user = db.login_user(username, password)
+
+            if user:
+                user_id = user[0]
+                role = user[3]
+
+                if role == "client":
+                    client = Client(user_id)
+                    client_menu(client)
+                elif role == "employee":
+                    employee = Employee(user_id)
+                    employee_menu(employee)
+                elif role == "admin":
+                    admin = Admin(user_id)
+                    admin_menu(admin)
+            else:
+                print("Invalid username or password.")
+
+        elif choice == "3":
+            break
+
+        else:
+            print("Invalid choice. Try again.")
+
+def client_menu(client):
+    while True:
+        print("1. View products")
+        print("2. Add to cart")
+        print("3. Remove from cart")
+        print("4. View orders")
+        print("5. Logout")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            client.view_products()
+
+        elif choice == "2":
+            product_id = input("Enter product ID: ")
+            quantity = input("Enter quantity: ")
+            client.add_to_cart(product_id, quantity)
+
+        elif choice == "3":
+            order_id = input("Enter order ID: ")
+            client.remove_from_cart(order_id)
+
+        elif choice == "4":
+            client.view_orders()
+
+        elif choice == "5":
+            break
+
+        else:
+            print("Invalid choice. Try again.")
+
+def employee_menu(employee):
+    while True:
+        print("1. View products")
+        print("2. Add product")
+        print("3. Update product")
+        print("4. Delete product")
+        print("5. Logout")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            employee.view_products()
+
+        elif choice == "2":
+            name = input("Enter product name: ")
+            price = float(input("Enter product price: "))
+            quantity = int(input("Enter product quantity: "))
+            employee.add_product(name, price, quantity)
+
+        elif choice == "3":
+            product_id = input("Enter product ID: ")
+            name = input("Enter new product name: ")
+            price = float(input("Enter new product price: "))
+            quantity = int(input("Enter new product quantity: "))
+            employee.update_product(product_id, name, price, quantity)
+
+        elif choice == "4":
+            product_id = input("Enter product ID: ")
+            employee.delete_product(product_id)
+
+        elif choice == "5":
+            break
+
+        else:
+            print("Invalid choice. Try again.")
+def admin_menu(admin):
+    while True:
+        print("1. View employees")
+        print("2. Add employee")
+        print("3. Update employee")
+        print("4. Delete employee")
+        print("5. Logout")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            admin.view_employees()
+
+        elif choice == "2":
+            username = input("Enter employee username: ")
+            password = input("Enter employee password: ")
+            admin.add_employee(username, password)
+
+        elif choice == "3":
+            employee_id = input("Enter employee ID: ")
+            username = input("Enter new username: ")
+            password = input("Enter new password: ")
+            admin.update_employee(employee_id, username, password)
+
+        elif choice == "4":
+            employee_id = input("Enter employee ID: ")
+            admin.delete_employee(employee_id)
+
+        elif choice == "5":
+            break
+
+        else:
+            print("Invalid choice. Try again.")
+
+if __name__ == '__main__':
+    main()
