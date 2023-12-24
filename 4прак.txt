@@ -30,6 +30,14 @@ class Database:
                                 FOREIGN KEY (product_id) REFERENCES products (id)
                             )''')
 
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS products_for_supplier (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                name TEXT NOT NULL,
+                                price REAL NOT NULL,
+                                quantity INTEGER NOT NULL,
+                                city TEXT NOT NULL
+                                    )''')
+
         self.conn.commit()
 
     def register_user(self, username, password, role):
@@ -48,19 +56,38 @@ class Database:
                             (name, price, quantity))
         self.conn.commit()
 
+    def add_product_supplier(self, name, price, quantity, city):
+        self.cursor.execute('''INSERT INTO products_for_supplier (name, price, quantity, city) VALUES (?, ?, ?,?)''',
+                            (name, price, quantity, city))
+        self.conn.commit()
+
     def update_product(self, product_id, name, price, quantity):
         self.cursor.execute('''UPDATE products SET name = ?, price = ?, quantity = ? WHERE id = ?''',
                             (name, price, quantity, product_id))
+        self.conn.commit()
+
+    def update_product_supplier(self, product_id, name, price, quantity, city):
+        self.cursor.execute('''UPDATE products_for_supplier SET name = ?, price = ?, quantity = ?, city = ?) WHERE id = ?''',
+                            (name, price, quantity, city, product_id))
         self.conn.commit()
 
     def delete_product(self, product_id):
         self.cursor.execute('''DELETE FROM products WHERE id = ?''', (product_id,))
         self.conn.commit()
 
+    def delete_product_supplier(self, product_id):
+        self.cursor.execute('''DELETE FROM products_for_supplier WHERE id = ?''', (product_id,))
+        self.conn.commit()
+
     def get_products(self):
         self.cursor.execute('''SELECT * FROM products''')
         products = self.cursor.fetchall()
         return products
+
+    def get_products_supplier(self):
+        self.cursor.execute('''SELECT * FROM products_for_supplier''')
+        products_for_supplier = self.cursor.fetchall()
+        return products_for_supplier
 
     def add_order(self, user_id, product_id, quantity):
         self.cursor.execute('''INSERT INTO orders (user_id, product_id, quantity) VALUES (?, ?, ?)''',
@@ -171,6 +198,35 @@ class Admin:
             print(f"ID: {employee[0]}, Username: {employee[1]}")
 
 
+class Supplier:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def add_product_supplier(self, name, price, quantity, city):
+        db = Database()
+        db.add_product_supplier(name, price, quantity, city)
+        print("Product added successfully.")
+
+    def update_product_supplier(self, product_id, name, price, quantity, city):
+        db = Database()
+        db.update_product_supplier(product_id, name, price, quantity, city)
+        print("Product updated successfully.")
+
+
+    def delete_product_supplier (self, product_id):
+        db = Database()
+        db.delete_product(product_id)
+        print("Product deleted successfully.")
+
+    def view_products_supplier(self):
+        db = Database()
+        products_for_supplier = db.get_products_supplier()
+        for product_for_supplier in products_for_supplier:
+            print(f"ID: {product_for_supplier[0]}, Name: {product_for_supplier[1]}, Price: {product_for_supplier[2]}, "
+                  f"Quantity: {product_for_supplier[3]}, City: {product_for_supplier[4]}")
+
+
+
 def main():
     db = Database()
     while True:
@@ -183,7 +239,7 @@ def main():
         if choice =="1":
             username = input("Enter username: ")
             password = input("Enter password: ")
-            role = input("Enter role (client, employee, admin): ")
+            role = input("Enter role (client, employee, admin, supplier): ")
 
             db.register_user(username, password, role)
             print("User registered successfully.")
@@ -207,6 +263,9 @@ def main():
                 elif role == "admin":
                     admin = Admin(user_id)
                     admin_menu(admin)
+                elif role == "supplier":
+                    supplier = Supplier(user_id)
+                    supplier_menu(supplier)
             else:
                 print("Invalid username or password.")
 
@@ -282,13 +341,52 @@ def employee_menu(employee):
 
         else:
             print("Invalid choice. Try again.")
+
+def supplier_menu(supplier):
+    while True:
+        print("1. View products")
+        print("2. Add product")
+        print("3. Update product")
+        print("4. Delete product")
+        print("5. Logout")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            supplier.view_products_supplier()
+
+        elif choice == "2":
+            name = input("Enter product name: ")
+            price = float(input("Enter product price: "))
+            quantity = int(input("Enter product quantity: "))
+            city = input("Enter product city: ")
+            supplier.add_product_supplier(name, price, quantity,city)
+
+        elif choice == "3":
+            product_id = input("Enter product ID: ")
+            name = input("Enter new product name: ")
+            price = float(input("Enter new product price: "))
+            quantity = int(input("Enter new product quantity: "))
+            city = (input("Enter new product city:"))
+            supplier.update_product_supplier(product_id, name, price, quantity,city)
+
+        elif choice == "4":
+            product_id = input("Enter product ID: ")
+            supplier.delete_product_supplier(product_id)
+
+        elif choice == "5":
+            break
+
+        else:
+            print("Invalid choice. Try again.")
 def admin_menu(admin):
     while True:
         print("1. View employees")
         print("2. Add employee")
         print("3. Update employee")
         print("4. Delete employee")
-        print("5. Logout")
+        print("5. View suppliers products")
+        print("6. Logout")
 
         choice = input("Enter your choice: ")
 
@@ -311,6 +409,9 @@ def admin_menu(admin):
             admin.delete_employee(employee_id)
 
         elif choice == "5":
+            admin.view_products_supplier()
+
+        elif choice == "6":
             break
 
         else:
